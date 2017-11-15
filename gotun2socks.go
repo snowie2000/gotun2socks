@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gofmt/gotun2socks/internal/packet"
 	"github.com/yinghuocho/gosocks"
-	"github.com/yinghuocho/gotun2socks/internal/packet"
 )
 
 const (
