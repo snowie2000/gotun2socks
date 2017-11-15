@@ -16,7 +16,7 @@ const (
 )
 
 var (
-	localSocksDialer *gosocks.SocksDialer = &gosocks.SocksDialer{
+	localSocksDialer = &gosocks.SocksDialer{
 		Auth:    &gosocks.AnonymousClientAuthenticator{},
 		Timeout: 1 * time.Second,
 	}
