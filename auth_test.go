@@ -10,7 +10,7 @@ func TestUserInfo(t *testing.T) {
 	pwd := []byte("password")
 	nameLen := len(name)
 	pwdLen := len(pwd)
-	userInfo := [256]byte{0}
+	userInfo := [255]byte{0}
 	userInfo[0] = 1
 	userInfo[1] = byte(nameLen)        // 用户名长度
 	userInfo[nameLen+2] = byte(pwdLen) // 密码长度
