@@ -7,6 +7,8 @@ import (
 	"sync"
 	"time"
 
+	"net/url"
+
 	"github.com/gofmt/gotun2socks/internal/packet"
 	"github.com/yinghuocho/gosocks"
 )
@@ -16,10 +18,7 @@ const (
 )
 
 var (
-	localSocksDialer = &gosocks.SocksDialer{
-		Auth:    &ClientAuthenticator{},
-		Timeout: 1 * time.Second,
-	}
+	localSocksDialer *gosocks.SocksDialer
 
 	_, ip1, _ = net.ParseCIDR("10.0.0.0/8")
 	_, ip2, _ = net.ParseCIDR("172.16.0.0/12")
@@ -51,10 +50,25 @@ func isPrivate(ip net.IP) bool {
 }
 
 func dialLocalSocks(localAddr string) (*gosocks.SocksConn, error) {
-	return localSocksDialer.Dial(localAddr)
+	u, err := url.Parse(localAddr)
+	if err != nil {
+		return nil, err
+	}
+
+	name := u.User.Username()
+	pass, _ := u.User.Password()
+
+	if localSocksDialer == nil {
+		localSocksDialer = &gosocks.SocksDialer{
+			Auth:    NewClientAuthenticator(name, pass),
+			Timeout: 1 * time.Second,
+		}
+	}
+
+	return localSocksDialer.Dial(u.Host)
 }
 
-func New(dev io.ReadWriteCloser, localSocksAddr string, dnsServers []string, publicOnly bool, enableDnsCache bool) *Tun2Socks {
+func New(dev io.ReadWriteCloser, localSocksAddr string, dnsServers []string, publicOnly bool, enableDnsCache bool) (*Tun2Socks, error) {
 	t2s := &Tun2Socks{
 		dev:             dev,
 		localSocksAddr:  localSocksAddr,
@@ -70,7 +84,7 @@ func New(dev io.ReadWriteCloser, localSocksAddr string, dnsServers []string, pub
 			storage: make(map[string]*dnsCacheEntry),
 		}
 	}
-	return t2s
+	return t2s, nil
 }
 
 func (t2s *Tun2Socks) Stop() {

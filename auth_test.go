@@ -1,6 +1,7 @@
 package gotun2socks
 
 import (
+	"net/url"
 	"testing"
 )
 
@@ -24,4 +25,14 @@ func TestUserInfo(t *testing.T) {
 	}
 
 	t.Log(userInfo)
+}
+
+func TestParseURL(t *testing.T) {
+	s := "socks5://username:password@127.0.0.1:10800"
+	u, err := url.Parse(s)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Logf("%#v", u)
 }

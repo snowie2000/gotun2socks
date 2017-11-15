@@ -684,7 +684,7 @@ func (tt *tcpConnTrack) updateSendWindow(pkt *tcpPacket) {
 func (tt *tcpConnTrack) run() {
 	for {
 		var ackTimer *time.Timer
-		var timeout *time.Timer = time.NewTimer(5 * time.Minute)
+		var timeout  = time.NewTimer(5 * time.Minute)
 
 		var ackTimeout <-chan time.Time
 		var socksCloseCh chan bool

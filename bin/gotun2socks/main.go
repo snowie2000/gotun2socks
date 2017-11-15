@@ -26,7 +26,8 @@ func main() {
 	flag.StringVar(&tunMask, "tun-mask", "255.255.255.0", "tun device netmask")
 	flag.StringVar(&tunGW, "tun-gw", "10.0.0.1", "tun device gateway")
 	flag.StringVar(&tunDNS, "tun-dns", "8.8.8.8,8.8.4.4", "tun dns servers")
-	flag.StringVar(&localSocksAddr, "local-socks-addr", "127.0.0.1:10800", "local SOCKS proxy address")
+	flag.StringVar(&localSocksAddr, "local-socks-addr", "socks5://username:password@127.0.0.1:10800",
+		"local SOCKS proxy address")
 	flag.BoolVar(&publicOnly, "public-only", false, "only forward packets with public address destination")
 	flag.BoolVar(&enableDnsCache, "enable-dns-cache", false, "enable local dns cache if specified")
 	flag.Parse()
@@ -37,7 +38,10 @@ func main() {
 		log.Fatal(e)
 	}
 
-	sock := gotun2socks.New(f, localSocksAddr, dnsServers, publicOnly, enableDnsCache)
+	sock, err := gotun2socks.New(f, localSocksAddr, dnsServers, publicOnly, enableDnsCache)
+	if e != nil {
+		panic(err)
+	}
 
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch,
