@@ -9,7 +9,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/gofmt/gotun2socks/internal/packet"
+	"github.com/snowie2000/gotun2socks/internal/packet"
 	"github.com/yinghuocho/gosocks"
 )
 
@@ -684,7 +684,7 @@ func (tt *tcpConnTrack) updateSendWindow(pkt *tcpPacket) {
 func (tt *tcpConnTrack) run() {
 	for {
 		var ackTimer *time.Timer
-		var timeout  = time.NewTimer(5 * time.Minute)
+		var timeout = time.NewTimer(5 * time.Minute)
 
 		var ackTimeout <-chan time.Time
 		var socksCloseCh chan bool

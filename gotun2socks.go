@@ -9,7 +9,7 @@ import (
 
 	"net/url"
 
-	"github.com/gofmt/gotun2socks/internal/packet"
+	"github.com/snowie2000/gotun2socks/internal/packet"
 	"github.com/yinghuocho/gosocks"
 )
 
@@ -59,9 +59,16 @@ func dialLocalSocks(localAddr string) (*gosocks.SocksConn, error) {
 	pass, _ := u.User.Password()
 
 	if localSocksDialer == nil {
-		localSocksDialer = &gosocks.SocksDialer{
-			Auth:    NewClientAuthenticator(name, pass),
-			Timeout: 1 * time.Second,
+		if name == "" && pass == "" {
+			localSocksDialer = &gosocks.SocksDialer{
+				Auth:    &gosocks.AnonymousClientAuthenticator{},
+				Timeout: 1 * time.Second,
+			}
+		} else {
+			localSocksDialer = &gosocks.SocksDialer{
+				Auth:    NewClientAuthenticator(name, pass),
+				Timeout: 1 * time.Second,
+			}
 		}
 	}
 
@@ -143,7 +150,8 @@ func (t2s *Tun2Socks) Run() {
 	t2s.wg.Add(1)
 	defer t2s.wg.Done()
 	for {
-		n, e := t2s.dev.Read(buf[:])
+		n, e := io.ReadAtLeast(t2s.dev, buf[:], 20)
+		log.Println("ip.protocol=", ip.Protocol)
 		if e != nil {
 			// TODO: stop at critical error
 			log.Printf("read packet error: %s", e)
@@ -181,6 +189,7 @@ func (t2s *Tun2Socks) Run() {
 				log.Printf("error to parse TCP: %s", e)
 				continue
 			}
+			log.Println("[TCP] connecting to", ip.DstIP)
 			t2s.tcp(data, &ip, &tcp)
 
 		case packet.IPProtocolUDP:
