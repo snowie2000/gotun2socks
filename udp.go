@@ -238,7 +238,6 @@ func (ut *udpConnTrack) run() {
 	chRelayUDP := make(chan *gosocks.UDPPacket)
 	go gosocks.UDPReader(udpBind, chRelayUDP, quitUDP)
 
-	start := time.Now()
 	for {
 		var t *time.Timer
 		if ut.t2s.isDNS(ut.remoteIP.String(), ut.remotePort) {
@@ -272,9 +271,9 @@ func (ut *udpConnTrack) run() {
 			ut.send(udpReq.Data)
 			if ut.t2s.isDNS(ut.remoteIP.String(), ut.remotePort) {
 				// DNS-without-fragment only has one request-response
-				end := time.Now()
-				ms := end.Sub(start).Nanoseconds() / 1000000
-				log.Printf("DNS session response received: %d ms", ms)
+				//end := time.Now()
+				//ms := end.Sub(start).Nanoseconds() / 1000000
+				//log.Printf("DNS session response received: %d ms", ms)
 				if ut.t2s.cache != nil {
 					ut.t2s.cache.store(udpReq.Data)
 				}

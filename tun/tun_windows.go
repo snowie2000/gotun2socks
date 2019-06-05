@@ -9,7 +9,6 @@ import (
 	"log"
 	"net"
 	"os/exec"
-	"strings"
 	"syscall"
 	"unsafe"
 
@@ -201,7 +200,7 @@ func OpenTunDevice(name, addr, gw, mask string, dns []string) (io.ReadWriteClose
 		windows.Close(fd)
 		return nil, err
 	} else {
-		log.Printf("set %s with net/mask: %s/%s through DHCP", devName, addr, mask)
+		// log.Printf("set %s with net/mask: %s/%s through DHCP", devName, addr, mask)
 	}
 
 	// set dns with dncp
@@ -227,7 +226,7 @@ func OpenTunDevice(name, addr, gw, mask string, dns []string) (io.ReadWriteClose
 		windows.Close(fd)
 		return nil, err
 	} else {
-		log.Printf("set %s with dns: %s through DHCP", devName, strings.Join(dns, ","))
+		// log.Printf("set %s with dns: %s through DHCP", devName, strings.Join(dns, ","))
 	}
 
 	// set connect.
@@ -311,7 +310,7 @@ func (dev *winTapDev) Read(data []byte) (int, error) {
 
 			// discard IPv6 packets
 			if dev.rBuf[14]&0xf0 == 0x60 {
-				log.Printf("ipv6 packet")
+				//log.Printf("ipv6 packet")
 				continue
 			} else if dev.rBuf[14]&0xf0 == 0x40 {
 				if !dev.wInitiated {

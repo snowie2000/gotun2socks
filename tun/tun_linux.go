@@ -39,12 +39,26 @@ func OpenTunDevice(name, addr, gw, mask string, dns []string) (io.ReadWriteClose
 	}
 
 	// config address
-	log.Printf("configuring tun device address")
-	cmd := exec.Command("ifconfig", name, addr, "netmask", mask, "mtu", "1500")
+	//log.Printf("configuring tun device address")
+	cmd := exec.Command("ip", "link", "set", name, "up")
 	err = cmd.Run()
 	if err != nil {
 		file.Close()
-		log.Printf("failed to configure tun device address")
+		//log.Printf("failed to configure tun device address")
+		return nil, err
+	}
+	cmd = exec.Command("ip", "link", "set", name, "mtu", "1500")
+	err = cmd.Run()
+	if err != nil {
+		file.Close()
+		//log.Printf("failed to configure tun device address")
+		return nil, err
+	}
+	cmd = exec.Command("ip", "addr", "add", addr+"/"+mask, "dev", name)
+	err = cmd.Run()
+	if err != nil {
+		file.Close()
+		//log.Printf("failed to configure tun device address")
 		return nil, err
 	}
 	syscall.SetNonblock(int(file.Fd()), false)

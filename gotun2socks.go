@@ -26,9 +26,9 @@ var (
 )
 
 type Tun2Socks struct {
-	dev            io.ReadWriteCloser
-	localSocksAddr string
-	publicOnly     bool
+	dev              io.ReadWriteCloser
+	localSocksAddr   string
+	publicOnly       bool
 
 	writerStopCh chan bool
 	writeCh      chan interface{}
@@ -75,7 +75,7 @@ func dialLocalSocks(localAddr string) (*gosocks.SocksConn, error) {
 	return localSocksDialer.Dial(u.Host)
 }
 
-func New(dev io.ReadWriteCloser, localSocksAddr string, dnsServers []string, publicOnly bool, enableDnsCache bool) (*Tun2Socks, error) {
+func New(dev io.ReadWriteCloser, localSocksAddr string, dnsServers []string, publicOnly bool, enableDnsCache bool) *Tun2Socks {
 	t2s := &Tun2Socks{
 		dev:             dev,
 		localSocksAddr:  localSocksAddr,
@@ -84,14 +84,14 @@ func New(dev io.ReadWriteCloser, localSocksAddr string, dnsServers []string, pub
 		writeCh:         make(chan interface{}, 10000),
 		tcpConnTrackMap: make(map[string]*tcpConnTrack),
 		udpConnTrackMap: make(map[string]*udpConnTrack),
-		dnsServers:      dnsServers,
+		dnsServers:       dnsServers,
 	}
 	if enableDnsCache {
 		t2s.cache = &dnsCache{
 			storage: make(map[string]*dnsCacheEntry),
 		}
 	}
-	return t2s, nil
+	return t2s
 }
 
 func (t2s *Tun2Socks) Stop() {
@@ -151,7 +151,7 @@ func (t2s *Tun2Socks) Run() {
 	defer t2s.wg.Done()
 	for {
 		n, e := io.ReadAtLeast(t2s.dev, buf[:], 20)
-		log.Println("ip.protocol=", ip.Protocol)
+		//log.Println("ip.protocol=", ip.Protocol)
 		if e != nil {
 			// TODO: stop at critical error
 			log.Printf("read packet error: %s", e)
@@ -165,6 +165,7 @@ func (t2s *Tun2Socks) Run() {
 		}
 		if t2s.publicOnly {
 			if !ip.DstIP.IsGlobalUnicast() {
+				log.Println(ip.DstIP, "ignored")
 				continue
 			}
 			if isPrivate(ip.DstIP) {
@@ -189,7 +190,7 @@ func (t2s *Tun2Socks) Run() {
 				log.Printf("error to parse TCP: %s", e)
 				continue
 			}
-			log.Println("[TCP] connecting to", ip.DstIP)
+			//log.Println("[TCP] connecting to", ip.DstIP)
 			t2s.tcp(data, &ip, &tcp)
 
 		case packet.IPProtocolUDP:
@@ -202,7 +203,7 @@ func (t2s *Tun2Socks) Run() {
 
 		default:
 			// Unsupported packets
-			log.Printf("Unsupported packet: protocol %d", ip.Protocol)
+			//log.Printf("Unsupported packet: protocol %d", ip.Protocol)
 		}
 	}
 }
